@@ -11,6 +11,7 @@ You can also include images in this folder and reference them in the markdown. E
 
 Calculates prediction error (e = x - mu) and updates internal state mu using gradient descent.
 Includes an adaptive suppression gate (alert_gate) to reduce learning rate during high-variance input.
+Apply 8-bit Q1.14 input values to ui_in and observe internal state mu on uo_out.
 
 ## How to test
 
