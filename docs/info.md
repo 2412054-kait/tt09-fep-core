@@ -9,7 +9,8 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Explain how your project works
+Calculates prediction error (e = x - mu) and updates internal state mu using gradient descent.
+Includes an adaptive suppression gate (alert_gate) to reduce learning rate during high-variance input.
 
 ## How to test
 
