@@ -1,40 +1,97 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
+name: test
 
-import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+on:
+push:
+workflow_dispatch:
 
+jobs:
+test:
+runs-on: ubuntu-24.04
 
-@cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+```
+steps:
+  - name: Checkout repo
+    uses: actions/checkout@v4
+    with:
+      submodules: recursive
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, units="us")
-    cocotb.start_soon(clock.start())
+  - name: Install iverilog
+    shell: bash
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y iverilog
 
-    # Reset
-    dut._log.info("Reset")
-    dut.ena.value = 1
-    dut.ui_in.value = 0
-    dut.uio_in.value = 0
-    dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
-    dut.rst_n.value = 1
+  - name: Setup python
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.11'
 
-    dut._log.info("Test project behavior")
+  - name: Install Python packages
+    shell: bash
+    run: |
+      python -m pip install -r test/requirements.txt
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+  # Install Typst explicitly
+  - name: Install Typst
+    shell: bash
+    run: |
+      set -e
+      export TYPST_INSTALL="$HOME/.typst"
+      curl -fsSL https://install.typst.community/install.sh | sh
+      echo "$HOME/.typst/bin" >> "$GITHUB_PATH"
+      export PATH="$HOME/.typst/bin:$PATH"
+      typst --version
+      which typst
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+  # Run Verilog tests
+  - name: Run tests
+    shell: bash
+    run: |
+      cd test
+      make clean
+      make
+      # Check test results
+      ! grep failure results.xml
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 0000
+  # Publish test results
+  - name: Test Summary
+    uses: test-summary/action@v2.3
+    with:
+      paths: "test/results.xml"
+    if: always()
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+  # Upload VCD and test results
+  - name: upload vcd
+    if: success() || failure()
+    uses: actions/upload-artifact@v4
+    with:
+      name: test-vcd
+      path: |
+        test/tb.vcd
+        test/results.xml
+      if-no-files-found: warn
+
+  # Confirm Typst is available before PDF generation
+  - name: Verify Typst before PDF
+    shell: bash
+    run: |
+      set -e
+      which typst
+      typst --version
+
+  # Generate project datasheet PDF
+  - name: Create PDF
+    shell: bash
+    run: |
+      set -e
+      ./tt/tt_tool.py --create-pdf
+
+  # Upload generated PDF
+  - name: Upload datasheet PDF
+    if: success() || failure()
+    uses: actions/upload-artifact@v4
+    with:
+      name: datasheet-pdf
+      path: datasheet.pdf
+      if-no-files-found: warn
+```
