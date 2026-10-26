@@ -75,4 +75,3 @@ steps:
       name: datasheet-pdf
       path: datasheet.pdf
       if-no-files-found: warn
-```
