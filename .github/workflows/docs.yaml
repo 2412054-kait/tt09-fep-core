@@ -13,5 +13,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Typst
+        uses: typst-community/setup-typst@v5
+
+      - name: Verify Typst
+        run: typst --version
+
       - name: Build docs
         uses: TinyTapeout/tt-gds-action/docs@tt09
