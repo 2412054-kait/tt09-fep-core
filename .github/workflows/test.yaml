@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # リポジトリのコードをチェックアウトするステップ（追加）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install iverilog
         shell: bash
         run: |
