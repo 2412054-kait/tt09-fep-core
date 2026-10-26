@@ -50,7 +50,6 @@ steps:
       cd test
       make clean
       make
-      # Check test results
       ! grep failure results.xml
 
   # Publish test results
