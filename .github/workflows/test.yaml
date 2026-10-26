@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # リポジトリのコードをチェックアウトするステップ
+      # サブモジュールも含めてリポジトリをチェックアウトする
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install iverilog
         shell: bash
@@ -77,12 +79,12 @@ jobs:
           command -v typst
           typst --version
 
-      # Generate project datasheet PDF
+      # Generate project datasheet PDF (パスを元の形式に戻して実行)
       - name: Create PDF
         shell: bash
         run: |
           set -e
-          tt_tool --create-pdf
+          ./tt/tt_tool.py --create-pdf
 
       # Upload generated PDF
       - name: Upload datasheet PDF
