@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # リポジトリのコードをチェックアウトするステップ（追加）
+      # リポジトリのコードをチェックアウトするステップ
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          ./tt/tt_tool.py --create-pdf
+          tt_tool --create-pdf
 
       # Upload generated PDF
       - name: Upload datasheet PDF
